@@ -1,0 +1,73 @@
+ChatGPT: There is no specified error message, but assuming it is related to the code, there are some potential areas for improvement:
+
+- It is good practice to mark the properties that are not modified outside of the class as private. In this case, `currentNumber`, `decimalPoint`, and `performingOperation` are not used outside of the class, so they should be marked as private.
+- The `equalsPressed` function should also update `model.result`, not just `model.number2`, in order to correctly update the result after an operation is performed.
+- The `signChange` function should also update `model.number2` with the negated value.
+- It is recommended to add error handling for when the user enters an invalid input or when a calculation cannot be performed.
+
+Here is the corrected code:
+
+class CalculatorViewModel: ObservableObject {
+    @Published var model = CalculatorModel()
+    private var currentNumber = "0"
+    private var decimalPoint = false
+    private var performingOperation = false
+    
+    func numberPressed(_ number: Int) {
+        if performingOperation {
+            currentNumber = "0"
+            performingOperation = false
+        }
+        if decimalPoint {
+            currentNumber += "\(number)"
+        } else {
+            if currentNumber == "0" {
+                currentNumber = "\(number)"
+            } else {
+                currentNumber += "\(number)"
+            }
+        }
+        model.number2 = Double(currentNumber) ?? 0
+    }
+    
+    func decimalPressed() {
+        if !decimalPoint {
+            decimalPoint = true
+            currentNumber += "."
+        }
+    }
+    
+    func operationPressed(_ operation: CalculatorModel.Operation) {
+        if model.number1 == nil {
+            model.number1 = model.result
+        } else {
+            model.number2 = model.result
+        }
+        model.operation = operation
+        currentNumber = "0"
+        performingOperation = true
+        decimalPoint = false
+    }
+    
+    func equalsPressed() {
+        model.number2 = model.result
+        model.result = model.calculate() // update result
+        currentNumber = "\(model.result)"
+        decimalPoint = false
+        performingOperation = false
+    }
+    
+    func clearPressed() {
+        model.clear()
+        currentNumber = "0"
+        decimalPoint = false
+        performingOperation = false
+    }
+    
+    func signChange() {
+        if let num = Double(currentNumber) {
+            currentNumber = "\(num * -1)"
+            model.number2 = Double(currentNumber) ?? 0 // update number2
+        }
+    }
+}
